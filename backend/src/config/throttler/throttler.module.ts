@@ -2,12 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 
-import throttlerConfig, { THROTTLER_CONFIG } from './throttler.config';
+import { THROTTLER_CONFIG } from './throttler.config';
 
 @Module({
   imports: [
     ThrottlerModule.forRootAsync({
-      imports: [ConfigModule.forFeature(throttlerConfig)],
       inject: [ConfigService],
 
       useFactory: (config: ConfigService) => {

@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'crypto';
 import { IncomingMessage } from 'http';
 import { LoggerModule } from 'nestjs-pino';
+import { CORRELATION_ID_HEADER } from 'src/core/middlewares/correlation-id.middleware';
 
 @Module({
   imports: [
     LoggerModule.forRootAsync({
-      imports: [ConfigModule],
       inject: [ConfigService],
 
       useFactory: (config: ConfigService) => {
@@ -26,6 +27,13 @@ import { LoggerModule } from 'nestjs-pino';
                   },
                 }
               : undefined,
+            genreqId: (req, res) => {
+              const existing = req.headers[CORRELATION_ID_HEADER];
+              const id = existing || randomUUID();
+              req.headers[CORRELATION_ID_HEADER] = id;
+              res.setHeader(CORRELATION_ID_HEADER, id);
+              return id;
+            },
 
             // Ẩn thông tin nhạy cảm khỏi log
             redact: {
