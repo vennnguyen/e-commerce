@@ -1,5 +1,5 @@
-import { flatten, Injectable } from '@nestjs/common';
-import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
+import { Injectable } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 
@@ -16,8 +16,9 @@ export class EmailService {
 
   constructor(
     private configService: ConfigService,
-    @InjectPinoLogger(EmailService.name) private readonly logger: PinoLogger,
+    private readonly logger: PinoLogger,
   ) {
+    this.logger.setContext(EmailService.name);
     this.createTransporter();
   }
 

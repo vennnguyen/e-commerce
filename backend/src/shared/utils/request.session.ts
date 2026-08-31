@@ -47,7 +47,7 @@ function readSessionCookieValue(
   for (let i = 0; i < MAX_COOKIE_CHUNKS; i++) {
     const chunk = cookiesValue(header, `${baseName}.${i}`);
     if (chunk === null) break;
-    chunks.push(...chunk);
+    chunks.push(chunk);
   }
 
   return chunks.length > 0 ? chunks.join('') : null;

@@ -19,7 +19,7 @@ export const envSchema = z.object({
   THROTTLER_LIMIT: z.coerce.number().default(60),
 
   //Email (SMTP)
-  STMP_USER: z.email(),
+  SMTP_USER: z.email(),
   SMTP_PASS: z.string().min(1),
   SMTP_FROM: z.email(),
 });

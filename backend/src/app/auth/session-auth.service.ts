@@ -16,7 +16,7 @@ export class SessionAuthService {
     headers: Record<string, string | string[] | undefined>,
   ) {
     const token = extractSessionTokenFromHeaders(headers);
-    if (!headers) return null;
+    if (!token) return null;
 
     const row = await this.sessionRepo.findOne({
       where: { token },
