@@ -18,6 +18,10 @@ export interface SignUpDto {
   name: string;
   confirmPassword?: string;
 }
+export interface SignInDto {
+  email: string;
+  password: string;
+}
 export interface AuthResponse {
   success: boolean;
   user: User;

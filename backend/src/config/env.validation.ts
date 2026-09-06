@@ -3,6 +3,9 @@ export const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
+  CLIENT_URL: z.string().min(1),
+  CORS_OTHER_URL: z.string().optional(),
+
   PORT: z.coerce.number().default(8080),
   DB_HOST: z.string().min(1).trim(),
   DB_PORT: z.coerce.number().int().min(1).max(65535),
@@ -22,6 +25,10 @@ export const envSchema = z.object({
   SMTP_USER: z.email(),
   SMTP_PASS: z.string().min(1),
   SMTP_FROM: z.email(),
+
+  //BetterAuth
+
+  BETTER_AUTH_SECRET: z.string().min(1),
 });
 
 export type Env = z.infer<typeof envSchema>;

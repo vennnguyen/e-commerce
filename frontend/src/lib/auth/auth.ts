@@ -1,7 +1,10 @@
 import { Pool } from "pg";
 import { betterAuth } from "better-auth";
-import { parseEnvOrigins } from "./parse-env-origins";
+import { parseEnvOrigins } from "../parse-env-origins";
 import { v7 as uuidv7 } from "uuid";
+import {
+  sendVerificationEmail,
+} from "@/lib/auth/send-auth-email";
 function getAppUrl(): string {
   const raw =
     process.env.BETTER_AUTH_APP_URL ||
@@ -71,6 +74,15 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
   },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: false,
+    expiresIn: 60 * 60 * 24,
+    sendVerificationEmail: async ({ user, token }) => {
+      const verifyUrl = `${appUrl}/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(user.email)}`;
+      await sendVerificationEmail(user.email, user.name, verifyUrl);
+    },
+  },
   secret: process.env.BETTER_AUTH_SECRET || "",
   baseURL: process.env.BETTER_AUTH_URL || appUrl,
   basePath: "/api/auth",
@@ -90,10 +102,7 @@ export const auth = betterAuth({
     "http://localhost:8080",
     "http://127.0.0.1:8080",
   ),
-  // session: {
-  //   expiresIn: 60 * 60 * 24 * 7,
-  //   updateAge: 60 * 60 * 24,
-  // },
+
   user: {
     fields: {
       createdAt: "created_at",

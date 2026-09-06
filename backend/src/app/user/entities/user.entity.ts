@@ -10,7 +10,7 @@ export class User extends BaseUuidEntity {
   @Column({ type: 'text', unique: true })
   email: string;
 
-  @Column({ default: true })
+  @Column({ default: false })
   emailVerified: boolean;
 
   @Column({ type: 'text', nullable: true })
