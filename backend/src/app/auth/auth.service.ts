@@ -21,7 +21,7 @@ export class AuthService {
 
   async verifyEmailCustom(token: string, email: string) {
     const secret = this.configService.get<string>('BETTER_AUTH_SECRET');
-    console.log('BETTER_AUTH_SECRET:', secret);
+
     if (!secret) {
       apiBadRequest('errors.auth.secretNotConfigured');
     }
