@@ -48,7 +48,6 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<"div">)
    resolver: zodResolver(signUpSchema),
  });
  const onSubmit = async (data: SignUpFormValues) => {
-  console.log(data);
   
    const { email, password, name } = data;
    await signUpMutation.mutateAsync({ email, password, name });

@@ -1,15 +1,45 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
 
-function createTransporter() {
-    console.log("SMTP_USER:", process.env.SMTP_USER);
-    console.log("SMTP_PASS:", process.env.SMTP_PASS ? "DEFINED" : "UNDEFINED");
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+const internalApi = axios.create({
+  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api/v1/internal`,
+  timeout: 15_000,
+  headers: { "Content-Type": "application/json" },
+});
+
+interface SendAuthEmailPayload {
+  to: string;
+  name: string;
+  url: string;
+}
+
+async function postAuthEmail(
+  path: "/email/verification" | "/email/password-reset",
+  payload: SendAuthEmailPayload,
+): Promise<void> {
+  const secret = process.env.INTERNAL_API_SECRET?.trim();
+
+  if (!secret) {
+    console.error(
+      "[auth] INTERNAL_API_SECRET is not set — auth email was NOT sent",
+    );
+    return;
+  }
+
+  try {
+    const res = await internalApi.post<{ success: boolean }>(path, payload, {
+      headers: { "X-Internal-Secret": secret },
+    });
+
+    if (res.data?.success !== true) {
+      console.error(`[auth] Backend reported email delivery failure (${path})`);
+    }
+  } catch (err) {
+    const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+
+    console.error(
+      `[auth] Auth email request failed (${path}${status ? `, ${status}` : ""})`,
+    );
+  }
 }
 
 export async function sendVerificationEmail(
@@ -17,27 +47,14 @@ export async function sendVerificationEmail(
   name: string,
   url: string,
 ): Promise<void> {
-  const subject = "Xác thực email";
-  const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #333;">Xác thực email</h2>
-        <p>Xin chào ${name},</p>
-        <p>Cảm ơn bạn đã đăng ký tài khoản! Vui lòng xác thực email để hoàn tất quá trình đăng ký.</p>
-        <div style="background-color: #f4f4f4; padding: 20px; margin: 20px 0; border-radius: 5px; text-align: center;">
-          <a href="${url}"
-             style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            Xác thực email
-          </a>
-        </div>
-        <p>Nếu bạn không tạo tài khoản này, vui lòng bỏ qua email này.</p>
-        <p>Trân trọng,<br>Đội ngũ Ecommerce Store</p>
-      </div>
-    `;
-  const transporter = createTransporter();
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM || "dev.bxmt@projgis.link",
-    to,
-    subject,
-    html,
-  });
+  
+  await postAuthEmail("/email/verification", { to, name, url });
+}
+
+export async function sendPasswordResetEmail(
+  to: string,
+  name: string,
+  url: string,
+): Promise<void> {
+  await postAuthEmail("/email/password-reset", { to, name, url });
 }

@@ -2,9 +2,12 @@ import { Pool } from "pg";
 import { betterAuth } from "better-auth";
 import { parseEnvOrigins } from "../parse-env-origins";
 import { v7 as uuidv7 } from "uuid";
+import { bearer } from "better-auth/plugins";
 import {
+  sendPasswordResetEmail,
   sendVerificationEmail,
 } from "@/lib/auth/send-auth-email";
+import { nextCookies } from "better-auth/next-js";
 function getAppUrl(): string {
   const raw =
     process.env.BETTER_AUTH_APP_URL ||
@@ -68,11 +71,16 @@ const pool = new Pool({
 const appUrl = getAppUrl();
 
 export const auth = betterAuth({
-  plugins: [],
+  plugins: [nextCookies(), bearer()],
   database: pool,
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    sendResetPassword: async ({ user, token }) => {
+      const resetPasswordUrl = `${appUrl}/auth/reset-password?token=${encodeURIComponent(token)}`;
+
+      await sendPasswordResetEmail(user.email, user.name, resetPasswordUrl);
+    },
   },
   emailVerification: {
     sendOnSignUp: true,
@@ -80,6 +88,7 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24,
     sendVerificationEmail: async ({ user, token }) => {
       const verifyUrl = `${appUrl}/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(user.email)}`;
+
       await sendVerificationEmail(user.email, user.name, verifyUrl);
     },
   },
