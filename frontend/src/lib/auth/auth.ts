@@ -92,6 +92,15 @@ export const auth = betterAuth({
       await sendVerificationEmail(user.email, user.name, verifyUrl);
     },
   },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      mapProfileToUser: () => ({
+        emailVerified: false,
+      }),
+    },
+  },
   secret: process.env.BETTER_AUTH_SECRET || "",
   baseURL: process.env.BETTER_AUTH_URL || appUrl,
   basePath: "/api/auth",

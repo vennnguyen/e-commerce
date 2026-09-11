@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSignUp } from '@/hooks/use-auth';
+import { useGoogleSignIn, useSignUp } from '@/hooks/use-auth';
 
 
 type SignUpFormValues = SignUpDto & { confirmPassword: string };
@@ -24,6 +24,9 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<"div">)
    const signUpMutation = useSignUp({
      success: 'Đăng kí thành công',
      error: 'Đăng kí thất bại',
+   });
+   const { signInWithGoogle, isLoading: isGoogleLoading } = useGoogleSignIn({
+     error: ("googleInitError"),
    });
  const signUpSchema = useMemo(
    () =>
@@ -53,6 +56,7 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<"div">)
    await signUpMutation.mutateAsync({ email, password, name });
 
  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden">
@@ -60,14 +64,14 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<"div">)
           <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">{("title")}</h1>
+                <h1 className="text-2xl font-bold">{"title"}</h1>
                 <p className="text-muted-foreground text-balance">
-                  {("description")}
+                  {"description"}
                 </p>
               </div>
 
               <Field>
-                <FieldLabel htmlFor="name">{("fullName")}</FieldLabel>
+                <FieldLabel htmlFor="name">{"fullName"}</FieldLabel>
                 <Input
                   id="name"
                   type="text"
@@ -79,7 +83,7 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<"div">)
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="email">{("email")}</FieldLabel>
+                <FieldLabel htmlFor="email">{"email"}</FieldLabel>
                 <Input
                   id="email"
                   type="email"
@@ -93,7 +97,7 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<"div">)
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="password">{("password")}</FieldLabel>
+                <FieldLabel htmlFor="password">{"password"}</FieldLabel>
                 <Input
                   id="password"
                   type="password"
@@ -107,7 +111,7 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<"div">)
 
               <Field>
                 <FieldLabel htmlFor="confirmPassword">
-                  {("confirmPassword")}
+                  {"confirmPassword"}
                 </FieldLabel>
                 <Input
                   id="confirmPassword"
@@ -127,12 +131,12 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<"div">)
                   // disabled={signUpMutation.isPending || isGoogleLoading}
                   disabled={signUpMutation.isPending}
                 >
-                  {signUpMutation.isPending ? ("submitting") : ("submit")}
+                  {signUpMutation.isPending ? "submitting" : "submit"}
                 </Button>
               </Field>
 
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                {("orContinue")}
+                {"orContinue"}
               </FieldSeparator>
 
               <Field>
@@ -140,9 +144,8 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<"div">)
                   variant="outline"
                   type="button"
                   className="w-full"
-                  // disabled={signUpMutation.isPending || isGoogleLoading}
-                  // onClick={signInWithGoogle}
-                  disabled={signUpMutation.isPending}
+                  disabled={signUpMutation.isPending || isGoogleLoading}
+                  onClick={() => void signInWithGoogle()}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -154,17 +157,17 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<"div">)
                       fill="currentColor"
                     />
                   </svg>
-                  {("googleSignUp")}
+                  {"googleSignUp"}
                 </Button>
               </Field>
 
               <FieldDescription className="text-center">
-                {("hasAccount")}{" "}
+                {"hasAccount"}{" "}
                 <a
                   href="/auth/signin"
                   className="font-medium text-primary hover:underline"
                 >
-                  {("signIn")}
+                  {"signIn"}
                 </a>
               </FieldDescription>
             </FieldGroup>

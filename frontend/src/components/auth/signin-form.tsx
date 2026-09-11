@@ -18,7 +18,7 @@ import { SocialAuthButtons } from "./social-auth-buttons";
 import { SignInDto } from '@/types/api.type';
 import { Button } from '../ui/button';
 import Image from 'next/image';
-import { useSignIn } from '@/hooks/use-auth';
+import { useGoogleSignIn, useSignIn } from '@/hooks/use-auth';
 
 
 export function SignInForm ({ className, ...props }: React.ComponentProps<"div">) {
@@ -26,6 +26,9 @@ export function SignInForm ({ className, ...props }: React.ComponentProps<"div">
     success: ("signInSuccess"),
     error: ("signInFailed"),
   });
+  const { signInWithGoogle, isLoading: isGoogleLoading } = useGoogleSignIn({
+       error: ("googleInitError"),
+     });
    const signInSchema = useMemo(
      () =>
        z.object({
@@ -114,7 +117,7 @@ export function SignInForm ({ className, ...props }: React.ComponentProps<"div">
                  {("orContinue")}
               </FieldSeparator>
 
-              {/* <SocialAuthButtons
+              <SocialAuthButtons
                 isPending={signInMutation.isPending}
                 isGoogleLoading={isGoogleLoading}
                 onGoogleSignIn={() => void signInWithGoogle()}
@@ -125,7 +128,7 @@ export function SignInForm ({ className, ...props }: React.ComponentProps<"div">
                   appleComingSoon: ("appleComingSoon"),
                   metaComingSoon: ("metaComingSoon"),
                 }}
-              /> */}
+              />
 
               <FieldDescription className="text-center">
                  {("noAccount")}{" "}

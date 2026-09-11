@@ -30,6 +30,15 @@ async function readSessionToken(): Promise<string> {
   const s = await getAuthClient().getSession();
   return s.data?.session?.token ?? "";
 }
+function publicAppOrigin(): string {
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+  return (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(
+    /\/+$/,
+    "",
+  );
+}
 export const authService = {
   signUp: async (data: SignUpDto): Promise<AuthResponse> => {
     const res = await getAuthClient().signUp.email({
@@ -97,5 +106,29 @@ export const authService = {
       user,
       token,
     };
+  },
+  signInWithGoogle: async (redirectPath?: string): Promise<void> => {
+    if (typeof window === "undefined") return;
+
+    const redirect =
+      redirectPath !== undefined && redirectPath !== ""
+        ? redirectPath
+        : "/product/catalog";
+    const encoded = encodeURIComponent(
+      redirect.startsWith("/") ? redirect : `/${redirect}`,
+    );
+    const callbackURL = `${publicAppOrigin()}/auth/callback/google?redirect=${encoded}`;
+    const res = await getAuthClient().signIn.social({
+      provider: "google",
+      callbackURL,
+    });
+    if (res.error) {
+      throw new Error(
+        res.error.message || "Khởi tạo đăng nhập Google thất bại",
+      );
+    }
+    if (res.data?.url) {
+      window.location.href = res.data.url;
+    }
   },
 };
