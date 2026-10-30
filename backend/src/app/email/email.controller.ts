@@ -20,8 +20,6 @@ export class InternalEmailController {
   @Post('verification')
   @HttpCode(HttpStatus.OK)
   async sendVerification(@Body() body: SendAuthEmailDto) {
-    console.log('ok');
-
     const sent = await this.emailService.sendVerificationEmail(
       body.to,
       body.name,

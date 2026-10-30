@@ -6,7 +6,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
+
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -18,12 +18,12 @@ import { SessionAuthService } from './session-auth.service';
 import { UserResponseDto } from '../user/dto/user-response.dto';
 import { User } from '../user/entities/user.entity';
 import { plainToInstance } from 'class-transformer';
+import { ResEx } from 'src/swagger/response-examples';
 
 @ApiTags('Xác thực - Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
-    private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly sessionAuth: SessionAuthService,
   ) {}
@@ -48,22 +48,17 @@ export class AuthController {
     };
   }
 
-  @Get('verify-email')
-  @ApiOperation({
-    summary: 'Xác minh email qua token (query)',
-    operationId: 'auth_verify_email',
-  })
-  async verifyEmail(
-    @Query('token') token: string,
-    @Query('email') email: string,
-  ) {
-    return this.authService.verifyEmailCustom(token, email);
-  }
-
   @Get('me')
   @ApiOperation({
     summary: 'Lấy thông tin user hiện tại (Bearer hoặc cookie session)',
     operationId: 'auth_get_me',
+  })
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    description: 'Thông tin user hiện tại',
+    schema: {
+      example: ResEx.auth.me,
+    },
   })
   async getCurrentUser(@Req() req: any) {
     const session = await this.sessionFromRequest(req);
@@ -90,6 +85,13 @@ export class AuthController {
   @ApiOperation({
     summary: 'Lấy session (token, hết hạn, user)',
     operationId: 'auth_get_session',
+  })
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    description: 'Thông tin session hiện tại',
+    schema: {
+      example: ResEx.auth.session,
+    },
   })
   async getSession(@Req() req: any) {
     const session = await this.sessionFromRequest(req);
@@ -118,6 +120,12 @@ export class AuthController {
     operationId: 'auth_check',
   })
   @ApiBearerAuth()
+  @ApiOkResponse({
+    description: 'Kiểm tra đã đăng nhập hay chưa',
+    schema: {
+      example: ResEx.auth.check,
+    },
+  })
   @HttpCode(HttpStatus.OK) //mặc định trả về 200 OK
   async checkAuth(@Req() req: any) {
     const session = await this.sessionFromRequest(req);

@@ -1,37 +1,63 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter, Space_Grotesk } from "next/font/google";
-import "./globals.css";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import QueryProvider from "@/provider/query-provider";
+import { LocaleDocumentLang } from "@/components/locale-document-lang";
 import { Toaster } from "sonner";
+import "./globals.css";
 
 const inter = Inter({
+  subsets: ["latin", "vietnamese"],
   variable: "--font-inter",
-  subsets: ["latin","vietnamese"],
 });
 
 const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
   subsets: ["latin", "vietnamese"],
+  variable: "--font-space-grotesk",
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "Techify",
-    template: '%s | Techify - Trang thương mại điện tử'
-  },
-  description: "Mua sắm trực tuyển nhanh chóng và an toàn",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("layout");
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+async function RootLayoutIntl({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
+  return (
+    <NextIntlClientProvider messages={messages} locale={locale}>
+      <LocaleDocumentLang />
+      <QueryProvider>
+        {children}
+        <Toaster position="bottom-right" richColors />
+      </QueryProvider>
+    </NextIntlClientProvider>
+  );
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html
       lang="vi"
-      className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${inter.variable} ${spaceGrotesk.variable}`}
     >
-      <body className="min-h-full flex flex-col">
-        <QueryProvider>{children}
-    <Toaster position="bottom-right" richColors/>
-        </QueryProvider>
+      <body className="font-sans antialiased">
+        <Suspense fallback={null}>
+          <RootLayoutIntl>{children}</RootLayoutIntl>
+        </Suspense>
       </body>
     </html>
   );

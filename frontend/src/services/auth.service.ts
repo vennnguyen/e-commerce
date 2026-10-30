@@ -1,5 +1,5 @@
 import { getAuthClient } from "@/lib/auth/auth-client";
-import { AuthResponse, SignInDto, SignUpDto, User } from "@/types/api.type";
+import { AuthResponse, ForgotPasswordDto, ForgotPasswordResponse, ResetPasswordDto, ResetPasswordResponse, SignInDto, SignUpDto, User } from "@/types/api.type";
 
 function mapAuthUser(u: {
   id: string;
@@ -131,4 +131,37 @@ export const authService = {
       window.location.href = res.data.url;
     }
   },
+  resendVerificationEmail: async (email: string): Promise<void> => {
+    const res = await getAuthClient().sendVerificationEmail({ email });
+    if (res.error) {
+      throw new Error(
+        res.error.message || "Gửi lại email xác thực thất bại",
+      );
+    }
+  },
+  forgotPassword: async (data: ForgotPasswordDto): Promise<ForgotPasswordResponse> => {
+    const res = await getAuthClient().requestPasswordReset({ email: data.email, redirectTo: `/auth/reset-password` });
+    if (res.error) {
+      throw new Error(
+        res.error.message || "Gửi yêu cầu khôi phục mật khẩu thất bại",
+      );
+    }
+    return {
+      success: true,
+      message: "Yêu cầu khôi phục mật khẩu đã được gửi. Vui lòng kiểm tra email của bạn.",
+    };
+  },
+
+  resetPassword: async (data: ResetPasswordDto): Promise<ResetPasswordResponse> => {
+    const res = await getAuthClient().resetPassword({ token: data.token, newPassword: data.newPassword });
+    if (res.error) {
+      throw new Error(
+        res.error.message || "Đặt lại mật khẩu thất bại",
+      );
+    }
+    return {
+      success: true,
+      message: "Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập với mật khẩu mới.",
+    };
+  }
 };

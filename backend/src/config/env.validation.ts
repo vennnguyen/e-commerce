@@ -1,5 +1,5 @@
 import { z } from 'zod';
-export const envSchema = z.object({
+export const envSchema = z.looseObject({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
@@ -16,6 +16,9 @@ export const envSchema = z.object({
   DB_POOL_MIN: z.coerce.number().default(2),
   DB_POOL_CONNECTION_TIMEOUT_MS: z.coerce.number().default(5000),
   DB_POOL_IDLE_TIMEOUT_MS: z.coerce.number().default(30000),
+
+  //Internal secret
+  INTERNAL_API_SECRET: z.string().min(1).trim(),
 
   //throttler
   THROTTLER_TTL_MS: z.coerce.number().default(1000),

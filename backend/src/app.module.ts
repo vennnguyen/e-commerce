@@ -18,7 +18,6 @@ import { CategoryModule } from './app/category/category.module';
 import { ProductModule } from './app/product/product.module';
 import { ProductImageModule } from './app/product-image/product-image.module';
 import { EmailModule } from './app/email/email.module';
-import { AuthGuard } from './core/guards/auth.guard';
 
 const envFile =
   process.env.NODE_ENV === 'production'

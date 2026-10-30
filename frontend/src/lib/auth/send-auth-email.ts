@@ -1,10 +1,5 @@
 import axios from "axios";
-
-const internalApi = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api/v1/internal`,
-  timeout: 15_000,
-  headers: { "Content-Type": "application/json" },
-});
+import { internalApi, internalSecret } from "@/lib/auth/internal-api";
 
 interface SendAuthEmailPayload {
   to: string;
@@ -16,14 +11,8 @@ async function postAuthEmail(
   path: "/email/verification" | "/email/password-reset",
   payload: SendAuthEmailPayload,
 ): Promise<void> {
-  const secret = process.env.INTERNAL_API_SECRET?.trim();
-
-  if (!secret) {
-    console.error(
-      "[auth] INTERNAL_API_SECRET is not set — auth email was NOT sent",
-    );
-    return;
-  }
+  const secret = internalSecret("auth email was NOT sent");
+  if (!secret) return;
 
   try {
     const res = await internalApi.post<{ success: boolean }>(path, payload, {
@@ -33,9 +22,10 @@ async function postAuthEmail(
     if (res.data?.success !== true) {
       console.error(`[auth] Backend reported email delivery failure (${path})`);
     }
-  } catch (err) {
-    const status = axios.isAxiosError(err) ? err.response?.status : undefined;
-
+  } catch (error) {
+    const status = axios.isAxiosError(error)
+      ? error.response?.status
+      : undefined;
     console.error(
       `[auth] Auth email request failed (${path}${status ? `, ${status}` : ""})`,
     );
@@ -47,7 +37,6 @@ export async function sendVerificationEmail(
   name: string,
   url: string,
 ): Promise<void> {
-  
   await postAuthEmail("/email/verification", { to, name, url });
 }
 

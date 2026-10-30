@@ -71,7 +71,7 @@ const pool = new Pool({
 const appUrl = getAppUrl();
 
 export const auth = betterAuth({
-  plugins: [nextCookies(), bearer()],
+  plugins: [bearer(), nextCookies()],
   database: pool,
   emailAndPassword: {
     enabled: true,

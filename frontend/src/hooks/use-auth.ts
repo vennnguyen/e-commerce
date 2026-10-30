@@ -2,7 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-import { SignInDto, SignUpDto } from "@/types/api.type";
+import { ForgotPasswordDto, ResetPasswordDto, SignInDto, SignUpDto } from "@/types/api.type";
 import { toast } from "sonner";
 import { authService } from "@/services/auth.service";
 import { useState } from "react";
@@ -11,6 +11,7 @@ import { useState } from "react";
 type AuthToastMessages = {
   success?: string;
   error?: string;
+  verifyEmail?: string;
 };
 export const useSignUp = (messages?: AuthToastMessages) => {
   const router = useRouter();
@@ -23,15 +24,23 @@ export const useSignUp = (messages?: AuthToastMessages) => {
         localStorage.setItem("token", response.token);
       }
 
-      queryClient.setQueryData(["auth", "user"], response.user);
-
-      toast.success(messages?.success ?? "Account created successfully!");
+      queryClient.setQueryData(["auth", "user"], {
+        user: response.user,
+        isGuest: false,
+        isAuthenticated: true,
+      });
 
       if (response.token) {
+        toast.success(messages?.success ?? "Account created successfully!");
         router.push("/product/catalog");
         return;
       }
-
+      //chưa có session cần xác mình email
+      toast.info(
+        messages?.verifyEmail ??
+          messages?.success ??
+          "Account created! Please verify your email.",
+      );
       router.push("/auth/signin");
     },
 
@@ -92,4 +101,69 @@ export const useGoogleSignIn = (messages?: { error?: string }) => {
   };
 
   return { signInWithGoogle, isLoading };
+};
+
+export const useResendVerificationEmail = (messages?: {
+  success?: string;
+  error?: string;
+}) => {
+  return useMutation({
+    mutationFn: (email: string) => authService.resendVerificationEmail(email),
+    onSuccess: () => {
+      toast.success(
+        messages?.success ?? "Verification email sent successfully!",
+      );
+    },
+    onError: (error: unknown) => {
+      const message = (error as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
+      toast.error(
+        typeof message === "string"
+          ? message
+          : (messages?.error ?? "Failed to resend verification email"),
+      );
+    },
+  });
+};
+
+export const useForgotPassword = (messages?: AuthToastMessages) => {
+  return useMutation({
+    mutationFn: (data: ForgotPasswordDto) => authService.forgotPassword(data),
+    onSuccess: () => {
+      toast.success(
+        messages?.success ?? "Password reset request sent successfully!",
+      );
+    },
+    onError: (error: unknown) => {
+      const message = (error as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
+      toast.error(
+        typeof message === "string"
+          ? message
+          : (messages?.error ?? "Failed to send password reset request"),
+      );
+    },
+  });
+};
+
+export const useResetPassword = (messages?: AuthToastMessages) => {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: (data: ResetPasswordDto) => authService.resetPassword(data),
+    onSuccess: () => {
+      toast.success(
+        messages?.success ?? "Password reset request sent successfully!",
+      );
+      router.push("/auth/signin");
+    },
+    onError: (error: unknown) => {
+      const message = (error as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
+      toast.error(
+        typeof message === "string"
+          ? message
+          : (messages?.error ?? "Failed to send password reset request"),
+      );
+    },
+  });
 };
