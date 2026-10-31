@@ -163,5 +163,9 @@ export const authService = {
       success: true,
       message: "Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập với mật khẩu mới.",
     };
+  },
+
+  signOut: async (): Promise<void> => {
+    await getAuthClient().signOut();
   }
 };

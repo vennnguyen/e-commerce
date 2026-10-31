@@ -10,7 +10,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useResetPassword } from "@/hooks/use-auth";
+import { useResetPassword } from "@/hooks/user-auth";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";

@@ -1,8 +1,8 @@
-'use client';
-import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useMemo } from 'react'
-import { useForm } from 'react-hook-form';
-import z from 'zod';
+"use client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useMemo } from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -15,36 +15,38 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SocialAuthButtons } from "./social-auth-buttons";
-import { SignInDto } from '@/types/api.type';
-import { Button } from '../ui/button';
-import Image from 'next/image';
-import { useGoogleSignIn, useSignIn } from '@/hooks/use-auth';
+import { SignInDto } from "@/types/api.type";
+import { Button } from "../ui/button";
+import Image from "next/image";
+import { useGoogleSignIn, useSignIn } from "@/hooks/user-auth";
 
-
-export function SignInForm ({ className, ...props }: React.ComponentProps<"div">) {
+export function SignInForm({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   const signInMutation = useSignIn({
-    success: ("signInSuccess"),
-    error: ("signInFailed"),
+    success: "signInSuccess",
+    error: "signInFailed",
   });
   const { signInWithGoogle, isLoading: isGoogleLoading } = useGoogleSignIn({
-       error: ("googleInitError"),
-     });
-   const signInSchema = useMemo(
-     () =>
-       z.object({
-         email: z.string().email(("invalidEmail")),
-         password: z.string().min(6, "passwordMin"),
-       }),
-     [],
-   );
-     const {
-       register,
-       handleSubmit,
-       formState: { errors },
-     } = useForm<SignInDto>({
-       resolver: zodResolver(signInSchema),
-       defaultValues: { email: "", password: "" },
-     });
+    error: "googleInitError",
+  });
+  const signInSchema = useMemo(
+    () =>
+      z.object({
+        email: z.string().email("invalidEmail"),
+        password: z.string().min(6, "passwordMin"),
+      }),
+    [],
+  );
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignInDto>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -58,18 +60,18 @@ export function SignInForm ({ className, ...props }: React.ComponentProps<"div">
           >
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold"> {("title")}</h1>
+                <h1 className="text-2xl font-bold"> {"title"}</h1>
                 <p className="text-muted-foreground text-balance">
-                   {("description")}
+                  {"description"}
                 </p>
               </div>
 
               <Field>
-                <FieldLabel htmlFor="email"> {("email")}</FieldLabel>
+                <FieldLabel htmlFor="email"> {"email"}</FieldLabel>
                 <Input
                   id="email"
                   type="email"
-                  placeholder= {("emailPlaceholder")}
+                  placeholder={"emailPlaceholder"}
                   {...register("email")}
                   disabled={signInMutation.isPending}
                 />
@@ -82,12 +84,12 @@ export function SignInForm ({ className, ...props }: React.ComponentProps<"div">
 
               <Field>
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password"> {("password")}</FieldLabel>
+                  <FieldLabel htmlFor="password"> {"password"}</FieldLabel>
                   <a
                     href="/auth/forgot-password"
                     className="ml-auto text-sm underline-offset-2 hover:underline"
                   >
-                     {("forgotPassword")}
+                    {"forgotPassword"}
                   </a>
                 </div>
                 <Input
@@ -109,34 +111,27 @@ export function SignInForm ({ className, ...props }: React.ComponentProps<"div">
                   className="w-full"
                   disabled={signInMutation.isPending}
                 >
-                  {signInMutation.isPending ? ("submitting") : ("submit")}
+                  {signInMutation.isPending ? "submitting" : "submit"}
                 </Button>
               </Field>
 
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                 {("orContinue")}
+                hoặc
               </FieldSeparator>
 
               <SocialAuthButtons
-                isPending={signInMutation.isPending}
+               
                 isGoogleLoading={isGoogleLoading}
-                onGoogleSignIn={() => void signInWithGoogle()}
-                labels={{
-                  loginApple: ("loginApple"),
-                  loginGoogle: ("loginGoogle"),
-                  loginMeta: ("loginMeta"),
-                  appleComingSoon: ("appleComingSoon"),
-                  metaComingSoon: ("metaComingSoon"),
-                }}
+                onGoogleSignIn={signInWithGoogle}
               />
 
               <FieldDescription className="text-center">
-                 {("noAccount")}{" "}
+                {"noAccount"}{" "}
                 <a
                   href="/auth/signup"
                   className="font-medium text-primary hover:underline"
                 >
-                   {("signUp")}
+                  {"signUp"}
                 </a>
               </FieldDescription>
             </FieldGroup>
@@ -156,18 +151,18 @@ export function SignInForm ({ className, ...props }: React.ComponentProps<"div">
       </Card>
 
       <FieldDescription className="px-6 text-center text-muted-foreground">
-         {("terms")}{" "}
+        {"terms"}{" "}
         <a href="/terms" className="underline">
-           {("termsLink")}
+          {"termsLink"}
         </a>{" "}
-         {("termsAnd")}{" "}
+        {"termsAnd"}{" "}
         <a href="/privacy" className="underline">
-           {("privacyLink")}
+          {"privacyLink"}
         </a>
         .
       </FieldDescription>
     </div>
   );
-};
+}
 
 export default SignInForm;

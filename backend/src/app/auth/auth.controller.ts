@@ -1,46 +1,39 @@
-import {
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Query,
-  Req,
-} from '@nestjs/common';
-
+import { Controller, Get, HttpCode, HttpStatus, Req } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserService } from '../user/user.service';
-import { SessionAuthService } from './session-auth.service';
-import { UserResponseDto } from '../user/dto/user-response.dto';
-import { User } from '../user/entities/user.entity';
 import { plainToInstance } from 'class-transformer';
+// import { SessionAuthService } from 'src/app/auth/session-auth/session-auth.service;
+import { UserResponseDto } from 'src/app/user/dto/user-response.dto';
+import { User } from 'src/app/user/entities/user.entity';
+import { UserService } from 'src/app/user/user.service';
 import { ResEx } from 'src/swagger/response-examples';
+import { SessionAuthService } from './session-auth.service';
 
-@ApiTags('Xác thực - Auth')
+@ApiTags('Xác thực (Auth)')
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly userService: UserService,
     private readonly sessionAuth: SessionAuthService,
   ) {}
-  private mapUserToResponse(user: User) {
+
+  private mapUserResponse(user: User) {
     return plainToInstance(UserResponseDto, user, {
       excludeExtraneousValues: true,
     });
   }
 
   private async sessionFromRequest(req: { headers: any }) {
-    const ctx = await this.sessionAuth.resolveSessionContext(req);
-    if (!ctx) {
-      return null;
-    }
+    const ctx = await this.sessionAuth.resolveSessionContext(req.headers);
+
+    if (!ctx) return null;
 
     return {
-      user: this.mapUserToResponse(ctx.user),
+      user: this.mapUserResponse(ctx.user),
       session: {
         token: ctx.session.token,
         expiresAt: ctx.session.expiresAt,
@@ -53,13 +46,12 @@ export class AuthController {
     summary: 'Lấy thông tin user hiện tại (Bearer hoặc cookie session)',
     operationId: 'auth_get_me',
   })
-  @ApiBearerAuth()
   @ApiOkResponse({
-    description: 'Thông tin user hiện tại',
-    schema: {
-      example: ResEx.auth.me,
-    },
+    description:
+      'Ví dụ khi đã đăng nhập; khi không có session trả authenticated: false',
+    schema: { example: ResEx.auth.me },
   })
+  @ApiBearerAuth()
   async getCurrentUser(@Req() req: any) {
     const session = await this.sessionFromRequest(req);
 
@@ -77,7 +69,7 @@ export class AuthController {
     return {
       success: true,
       authenticated: true,
-      user: fullUser ? this.mapUserToResponse(fullUser) : session.user,
+      user: fullUser ? this.mapUserResponse(fullUser) : session.user,
     };
   }
 
@@ -86,13 +78,11 @@ export class AuthController {
     summary: 'Lấy session (token, hết hạn, user)',
     operationId: 'auth_get_session',
   })
-  @ApiBearerAuth()
   @ApiOkResponse({
-    description: 'Thông tin session hiện tại',
-    schema: {
-      example: ResEx.auth.session,
-    },
+    description: 'Ví dụ khi có session',
+    schema: { example: ResEx.auth.session },
   })
+  @ApiBearerAuth()
   async getSession(@Req() req: any) {
     const session = await this.sessionFromRequest(req);
 
@@ -119,14 +109,12 @@ export class AuthController {
     summary: 'Kiểm tra đã đăng nhập hay chưa',
     operationId: 'auth_check',
   })
-  @ApiBearerAuth()
   @ApiOkResponse({
-    description: 'Kiểm tra đã đăng nhập hay chưa',
-    schema: {
-      example: ResEx.auth.check,
-    },
+    description: 'Ví dụ phản hồi',
+    schema: { example: ResEx.auth.check },
   })
-  @HttpCode(HttpStatus.OK) //mặc định trả về 200 OK
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async checkAuth(@Req() req: any) {
     const session = await this.sessionFromRequest(req);
 

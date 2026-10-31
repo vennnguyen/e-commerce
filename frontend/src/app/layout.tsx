@@ -8,6 +8,8 @@ import { LocaleDocumentLang } from "@/components/locale-document-lang";
 import { Toaster } from "sonner";
 import "./globals.css";
 
+import { Header } from "@/components/header/header";
+
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
   variable: "--font-inter",
@@ -36,6 +38,7 @@ async function RootLayoutIntl({
     <NextIntlClientProvider messages={messages} locale={locale}>
       <LocaleDocumentLang />
       <QueryProvider>
+        <Header/>
         {children}
         <Toaster position="bottom-right" richColors />
       </QueryProvider>
