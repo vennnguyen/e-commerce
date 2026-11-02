@@ -107,7 +107,7 @@ export const useSignIn = (
 
       toast.success(messages?.success ?? "Sign in successful");
 
-      // router.push(redirectTo ?? "/product/catalog");
+      router.push(redirectTo ?? "/product/catalog");
     },
 
     onError: mutationErrorToast(messages?.error ?? "Sign in failed"),
