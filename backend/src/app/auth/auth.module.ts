@@ -6,6 +6,8 @@ import { Verification } from './entites/verification.entity';
 import { SessionAuthService } from './session-auth.service';
 import { AuthController } from './auth.controller';
 import { UserModule } from '../user/user.module';
+import { AuthGuard } from 'src/core/guards/auth.guard';
+import { RolesGuard } from 'src/core/guards/role.guard';
 
 @Global()
 @Module({
@@ -14,7 +16,7 @@ import { UserModule } from '../user/user.module';
     UserModule,
   ],
   controllers: [AuthController],
-  providers: [SessionAuthService],
-  exports: [SessionAuthService],
+  providers: [SessionAuthService, AuthGuard, RolesGuard],
+  exports: [SessionAuthService, AuthGuard, RolesGuard],
 })
 export class AuthModule {}

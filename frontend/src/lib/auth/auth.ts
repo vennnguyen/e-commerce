@@ -2,7 +2,7 @@ import { Pool } from "pg";
 import { betterAuth } from "better-auth";
 import { parseEnvOrigins } from "../parse-env-origins";
 import { v7 as uuidv7 } from "uuid";
-import { bearer } from "better-auth/plugins";
+import { anonymous, bearer } from "better-auth/plugins";
 import {
   sendPasswordResetEmail,
   sendVerificationEmail,
@@ -71,7 +71,17 @@ const pool = new Pool({
 const appUrl = getAppUrl();
 
 export const auth = betterAuth({
-  plugins: [bearer(), nextCookies()],
+  plugins: [bearer(), anonymous({
+    emailDomainName: "temp.local",
+    generateName: () => `Guest-User`,
+     schema: {
+      user: {
+        fields: {
+          isAnonymous: "is_anonymous",
+        },
+      },
+    }
+  }),nextCookies()],
   database: pool,
   emailAndPassword: {
     enabled: true,
@@ -127,6 +137,39 @@ export const auth = betterAuth({
       updatedAt: "updated_at",
       emailVerified: "email_verified",
     },
+    additionalFields: {
+      role: {
+        type: "string",
+        required: false,
+        defaultValue: "customer",
+        input: false,
+
+      }
+
+    }
+  },
+  databaseHooks:{
+    user :{
+      create: {
+        before: async (user) => {
+          if(user.isAnonymous){
+            return {
+              data: {
+                ...user,
+                role: "unregistered",
+              }
+            }
+          }
+        }
+      },
+      update: {
+        after : async (user) => {
+          if(!user.isAnonymous && user.role === "unregistered"){
+            await pool.query(`UPDATE "users" SET role = 'customer' WHERE id = $1`, [user.id]);
+          }
+        }
+      }
+    }
   },
 
   session: {

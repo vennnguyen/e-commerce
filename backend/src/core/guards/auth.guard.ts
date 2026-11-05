@@ -1,61 +1,33 @@
-import { CanActivate, ExecutionContext, Logger } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Request } from 'express';
 import { SessionAuthService } from 'src/app/auth/session-auth.service';
-import { UserRole } from 'src/shared/types/enum';
-import { ROLES_KEY } from '../decorators/role.decorator';
+import { User } from 'src/app/user/entities/user.entity';
 
+export interface AuthenticatedRequest extends Request {
+  user?: User;
+}
+
+@Injectable()
 export class AuthGuard implements CanActivate {
-  private readonly logger = new Logger(AuthGuard.name);
-  constructor(
-    private sessionAuth: SessionAuthService,
-    private reflector: Reflector,
-  ) {}
+  constructor(private readonly sessionAuth: SessionAuthService) {}
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-
-    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
-      ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
-
-    // const allowsUnregistered =
-    //   requiredRoles && requiredRoles.includes(UserRole.UNREGISTERED);
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
 
     const fullUser = await this.sessionAuth.resolveAuthenticatedUser(
       request.headers,
     );
+
     if (fullUser) {
       request.user = fullUser;
-
-      // kiểm tra user có đúng role không
-      if (requiredRoles && requiredRoles.length > 0) {
-        const hasRole = requiredRoles.includes(fullUser.role);
-        if (!hasRole) {
-          this.logger.debug(
-            `User role "${fullUser.role}" not in required roles [${requiredRoles}] — request denied`,
-          );
-          return false;
-        }
-      }
-
       return true;
     }
-    // if (allowsUnregistered) {
-    //   try {
-    //     const { user, token } =
-    //       await this.guestService.createGuestUserAndSession();
 
-    //     request.user = user;
-    //     request.guestSessionToken = token;
-
-    //     return true;
-    //   } catch (error) {
-    //     this.logger.warn(`Failed to create guest user: ${error.message}`);
-    //     return false;
-    //   }
-    // }
-
-    this.logger.debug('No valid session — request denied');
-    return false;
+    throw new UnauthorizedException('Bạn cần đăng nhập để tiếp tục');
   }
 }
