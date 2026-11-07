@@ -2,21 +2,25 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
+import { Product } from '../product/entities/product.entity';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
   ) {}
-  create(dto: CreateCategoryDto) {
-    const slugExists = this.categoryRepository.findOne({
+  async create(dto: CreateCategoryDto) {
+    const slugExists = await this.categoryRepository.findOne({
       where: { slug: dto.slug },
     });
     if (slugExists) {
@@ -24,7 +28,7 @@ export class CategoryService {
     }
 
     if (dto.parentId) {
-      const parentCategory = this.categoryRepository.findOne({
+      const parentCategory = await this.categoryRepository.findOne({
         where: { id: dto.parentId },
       });
       if (!parentCategory) {
@@ -35,19 +39,74 @@ export class CategoryService {
     return this.categoryRepository.save(category);
   }
 
-  findAll() {
-    return `This action returns all category`;
+  async findAll() {
+    return await this.categoryRepository.find({
+      where: { isActive: true },
+      order: { display_order: 'ASC', createdAt: 'DESC' },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
+  async findOne(id: string) {
+    const category = await this.categoryRepository.findOne({
+      where: { id, isActive: true },
+      relations: { children: true },
+    });
+    if (!category) {
+      throw new NotFoundException('Không tìm thấy danh mục với ID đã cho');
+    }
+    return category;
   }
 
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    return `This action updates a #${id} category`;
+  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+    const existingCategory = await this.categoryRepository.findOne({
+      where: { id },
+    });
+    if (!existingCategory) {
+      throw new NotFoundException('Không tìm thấy danh mục');
+    }
+    if (updateCategoryDto.slug) {
+      const slugExists = await this.categoryRepository.findOne({
+        where: { slug: updateCategoryDto.slug, id: Not(id) },
+      });
+      if (slugExists) {
+        throw new ConflictException('Slug đã tồn tại');
+      }
+    }
+    if (updateCategoryDto.parentId) {
+      if (updateCategoryDto.parentId === id) {
+        throw new BadRequestException('Danh mục cha không thể là chính nó');
+      }
+      const parentCategory = await this.categoryRepository.findOne({
+        where: { id: updateCategoryDto.parentId },
+      });
+      if (!parentCategory) {
+        throw new BadRequestException('Danh mục cha không tồn tại');
+      }
+    }
+    await this.categoryRepository.update(id, updateCategoryDto);
+    return this.findOne(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} category`;
+  async remove(id: string) {
+    const existingCategory = await this.categoryRepository.findOne({
+      where: { id },
+    });
+    if (!existingCategory) {
+      throw new NotFoundException('Không tìm thấy danh mục');
+    }
+    const childCategories = await this.categoryRepository.count({
+      where: { parentId: id },
+    });
+    if (childCategories > 0) {
+      throw new ConflictException('Không thể xóa danh mục có danh mục con');
+    }
+    const productCount = await this.productRepository.count({
+      where: { category_id: id },
+    });
+    if (productCount > 0) {
+      throw new ConflictException('Không thể xóa danh mục có sản phẩm');
+    }
+    await this.categoryRepository.softDelete(id);
+    return { success: true, message: 'Danh mục đã được xóa thành công' };
   }
 }
