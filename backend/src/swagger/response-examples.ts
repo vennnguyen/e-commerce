@@ -73,4 +73,18 @@ export const ResEx = {
       },
     },
   },
+  category: {
+    one: {
+      id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+      name: 'Điện thoại',
+      slug: 'dien-thoai',
+      description: 'Danh mục điện thoại',
+      imageKey: null,
+      parentId: null,
+      isActive: true,
+      displayOrder: 0,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    },
+  },
 };
