@@ -10,16 +10,19 @@ import {
   Min,
 } from 'class-validator';
 
-export enum SortBy {
-  RELEVANCE = 'relevance',
-  PRICE_ASC = 'price_asc',
-  PRICE_DESC = 'price_desc',
-  RATING_DESC = 'rating_desc',
-  POPULAR = 'popular',
-  NAME_ASC = 'name_asc',
-  NAME_DESC = 'name_desc',
-  CREATED_DESC = 'created_desc',
-}
+// Literal values let Swagger emit metadata without importing the source file.
+export const SortBy = {
+  RELEVANCE: 'relevance',
+  PRICE_ASC: 'price_asc',
+  PRICE_DESC: 'price_desc',
+  RATING_DESC: 'rating_desc',
+  POPULAR: 'popular',
+  NAME_ASC: 'name_asc',
+  NAME_DESC: 'name_desc',
+  CREATED_DESC: 'created_desc',
+} as const;
+
+export type SortBy = (typeof SortBy)[keyof typeof SortBy];
 
 const toBoolean = ({
   obj,
