@@ -1,76 +1,97 @@
 import { Category } from 'src/app/category/entities/category.entity';
+import { ProductAttribute } from 'src/app/product/entities/product-attribute.entity';
+import { ProductOption } from 'src/app/product/entities/product-option.entity';
+import { ProductVariant } from 'src/app/product/entities/product-variant.entity';
 import { BaseUuidEntity } from 'src/config/database/base-uuid.entity';
 import {
   decimalColumn,
   decimalColumnTransformer,
   nullableDecimalColumn,
 } from 'src/shared/utils/decimal-column.transformer';
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  DeleteDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 
-@Entity()
-@Index('idx_product_featured', ['is_featured'], {
+@Index('idx_product_feartured', ['isFeatured'], {
   where: '"is_featured" = true AND "is_active" = true AND "deleted_at" IS NULL',
 })
+@Entity()
 export class Product extends BaseUuidEntity {
   @Index()
   @Column({ type: 'uuid' })
-  category_id: string;
+  categoryId: string;
 
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
   @Column({ type: 'text', nullable: true })
-  short_description: string | null;
+  shortDescription: string | null;
 
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
   @Column({ type: 'varchar', length: 255, unique: true })
-  slug: string | null;
+  slug: string;
 
   @Column(decimalColumn)
   price: number;
 
   @Column(nullableDecimalColumn)
-  compare_at_price: number | null;
+  compareAtPrice: number | null;
 
   @Column({ default: 0 })
-  stock_quantity: number;
+  stockQuantity: number;
 
   @Column({ unique: true })
   sku: string;
 
   @Column({ default: true })
-  is_active: boolean;
+  isActive: boolean;
 
-  @Column({ default: true })
-  is_featured: boolean;
+  @Column({ default: false })
+  isFeatured: boolean;
 
-  @Column({ default: true })
-  has_variants: boolean;
+  @Column({ type: 'boolean', default: false })
+  hasVariants: boolean;
 
   @Column({ default: 0 })
-  view_count: number;
+  viewCount: number;
 
   @Column({
-    default: 0,
     type: 'decimal',
     precision: 3,
     scale: 2,
+    default: 0,
     transformer: decimalColumnTransformer,
   })
-  rating_avergage: number;
+  ratingAverage: number;
 
   @Column({ default: 0 })
-  review_count: number;
+  reviewCount: number;
 
   @Column(nullableDecimalColumn)
   weight: number | null;
 
-  @Column({ type: 'timestamptz', nullable: true })
-  deleted_at: Date | null;
-  //relations
+  @DeleteDateColumn({ type: 'timestamptz', nullable: true })
+  deletedAt: Date | null;
+
+  //   Relations
   @ManyToOne(() => Category)
   @JoinColumn({ name: 'category_id' })
   category: Category;
+
+  @OneToMany(() => ProductOption, (option) => option.product)
+  options: ProductOption[];
+
+  @OneToMany(() => ProductVariant, (variant) => variant.product)
+  variants: ProductVariant[];
+
+  @OneToMany(() => ProductAttribute, (attribute) => attribute.product)
+  attributes: ProductAttribute[];
 }

@@ -128,6 +128,7 @@ export const ResEx = {
       sku: 'SKU-IP15',
       isActive: true,
       isFeatured: false,
+      hasVariants: true,
       viewCount: 0,
       ratingAverage: 0,
       reviewCount: 0,
@@ -139,6 +140,57 @@ export const ResEx = {
         name: 'Điện thoại',
         slug: 'dien-thoai',
       },
+      options: [
+        {
+          id: 'opt11111-1111-1111-1111-111111111111',
+          name: 'Dung lượng',
+          type: 'text',
+          displayOrder: 0,
+          values: [
+            {
+              id: 'val11111-1111-1111-1111-111111111111',
+              value: '128gb',
+              label: '128GB',
+              priceModifier: 0,
+              metadata: null,
+            },
+            {
+              id: 'val22222-2222-2222-2222-222222222222',
+              value: '256gb',
+              label: '256GB',
+              priceModifier: 3000000,
+              metadata: null,
+            },
+          ],
+        },
+      ],
+      variants: [
+        {
+          id: 'var11111-1111-1111-1111-111111111111',
+          sku: 'SKU-IP15-128',
+          price: 25990000,
+          compareAtPrice: null,
+          stockQuantity: 50,
+          isActive: true,
+          optionValues: [
+            { option: 'Dung lượng', value: '128gb', label: '128GB' },
+          ],
+        },
+      ],
+      attributes: [
+        {
+          key: 'Màn hình',
+          value: '6.1 inch OLED Super Retina XDR',
+          group: 'Màn hình',
+          isFilterable: false,
+        },
+        {
+          key: 'Chip xử lý',
+          value: 'Apple A16 Bionic',
+          group: 'Hiệu năng',
+          isFilterable: false,
+        },
+      ],
     },
     search: {
       products: [
@@ -154,6 +206,7 @@ export const ResEx = {
           sku: 'SKU-IP15',
           isActive: true,
           isFeatured: false,
+          hasVariants: true,
           categoryId: 'c0ffee00-1111-2222-3333-444455556666',
           categoryName: 'Điện thoại',
           ratingAverage: 4.5,
@@ -183,6 +236,7 @@ export const ResEx = {
         sku: 'SKU-IP15',
         isActive: true,
         isFeatured: true,
+        hasVariants: true,
         categoryId: 'c0ffee00-1111-2222-3333-444455556666',
         categoryName: 'Điện thoại',
         ratingAverage: 4.5,
@@ -194,6 +248,14 @@ export const ResEx = {
       price: 25990000,
       compareAtPrice: 28990000,
       stockQuantity: 100,
+      variantPricing: [
+        {
+          id: 'var11111-1111-1111-1111-111111111111',
+          price: 25990000,
+          compareAtPrice: null,
+          stockQuantity: 50,
+        },
+      ],
     },
   },
 };

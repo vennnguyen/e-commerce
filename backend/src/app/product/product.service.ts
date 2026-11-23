@@ -91,16 +91,16 @@ export class ProductService {
       select: {
         id: true,
         price: true,
-        compare_at_price: true,
-        stock_quantity: true,
+        compareAtPrice: true,
+        stockQuantity: true,
       },
     });
     if (!product) apiNotFound('Không tìm thấy sản phẩm');
 
     return {
       price: product.price,
-      compareAtPrice: product.compare_at_price,
-      stockQuantity: product.stock_quantity,
+      compareAtPrice: product.compareAtPrice,
+      stockQuantity: product.stockQuantity,
     };
   }
 

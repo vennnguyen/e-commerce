@@ -101,7 +101,7 @@ export class CategoryService {
       throw new ConflictException('Không thể xóa danh mục có danh mục con');
     }
     const productCount = await this.productRepository.count({
-      where: { category_id: id },
+      where: { categoryId: id },
     });
     if (productCount > 0) {
       throw new ConflictException('Không thể xóa danh mục có sản phẩm');
